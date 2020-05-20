@@ -40,4 +40,6 @@ func init() {
 
 	beego.Router("/cl/visitTrackId", &controllers.CallbackController{}, "Get:VisitTrackId")
 
+	beego.Router("/cl/count_sub", &controllers.CountController{}, "Get:CountSub")
+
 }

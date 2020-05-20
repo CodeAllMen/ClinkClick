@@ -11,8 +11,9 @@ import (
 )
 
 type TrackRemark struct {
-	Index int
-	Mux   *sync.Mutex
+	Index   int
+	Total   int
+	Mux     *sync.Mutex
 }
 
 var TrackRemarkStruct *TrackRemark
@@ -23,19 +24,21 @@ func InitTrackRemark() {
 		err error
 	)
 
-	// 获取最新的id
+	// 获取 当天 最新的id
+	trackModel := new(models.AffTrack)
 	trackRemarkModel := new(models.TrackRemarkModel)
 
 	if err = trackRemarkModel.GetId(); err != nil {
 		fmt.Println(err)
 	}
 
-	if trackRemarkModel.TrackId == 0 {
-		trackRemarkModel.TrackId = 10
+	if err = trackModel.GetLast(); err != nil {
+		fmt.Println(err)
 	}
 
 	TrackRemarkStruct = &TrackRemark{
-		Index: trackRemarkModel.TrackId,
+		Index: int(trackModel.TrackID),
+		Total: trackRemarkModel.Count,
 		Mux:   &sync.Mutex{},
 	}
 

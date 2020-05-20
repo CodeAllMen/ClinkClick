@@ -1,12 +1,14 @@
 package main
 
 import (
+	"fmt"
 	"github.com/MobileCPX/PreBaseLib/databaseutil/redis"
 	"github.com/MobileCPX/PreBaseLib/splib/click"
 	"github.com/angui001/ClinkClick/initial"
 	"github.com/angui001/ClinkClick/models"
 	_ "github.com/angui001/ClinkClick/routers"
 	"github.com/astaxie/beego"
+	"github.com/robfig/cron"
 )
 
 func init() {
@@ -21,9 +23,49 @@ func init() {
 	// sendMtTask()
 }
 
+func updateTrackRemark() {
+	var (
+		err error
+	)
+
+	initial.TrackRemarkStruct.Mux.Lock()
+
+	trackModel := new(models.AffTrack)
+
+	if err = trackModel.GetLast(); err != nil {
+		fmt.Println(err)
+	}
+
+	initial.TrackRemarkStruct.Index = int(trackModel.TrackID)
+
+	initial.TrackRemarkStruct.Mux.Unlock()
+}
+
+// 返回一个支持至 秒 级别的 cron
+func newWithSeconds() *cron.Cron {
+	secondParser := cron.NewParser(cron.Second | cron.Minute |
+		cron.Hour | cron.Dom | cron.Month | cron.DowOptional | cron.Descriptor)
+	return cron.New(cron.WithParser(secondParser), cron.WithChain())
+}
+
+func startUpdateTrackRemark() {
+	var (
+		err error
+	)
+
+	cr := newWithSeconds()
+	if _, err = cr.AddFunc("0 0 0,12 * * ?", updateTrackRemark); err != nil {
+		fmt.Println(err)
+	}
+
+	cr.Start()
+}
+
 func main() {
 
 	initial.InitTrackRemark()
+
+	startUpdateTrackRemark()
 
 	beego.Run()
 }

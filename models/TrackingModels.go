@@ -60,7 +60,16 @@ func (track *AffTrack) GetOne(queryType int) error {
 	return query.One(track)
 }
 
-func (track *AffTrack) GetAll() {
+// 获取最后一个数据
+func (track *AffTrack) GetLast() (err error) {
+
+	db := orm.NewOrm()
+
+	if err = db.QueryTable(track.TableName()).OrderBy("-track_id").One(track); err != nil {
+		fmt.Println(err)
+	}
+
+	return
 
 }
 

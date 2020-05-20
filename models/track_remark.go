@@ -12,6 +12,7 @@ import (
 // 此表用于存储最后一次的 track_id
 type TrackRemarkModel struct {
 	Id      int `orm:"pk;auto;column(id)" json:"id"`
+	Count   int `orm:"count" json:"count"`
 	TrackId int `orm:"track_id" json:"track_id"`
 }
 
@@ -28,16 +29,10 @@ func (t *TrackRemarkModel) Insert() {
 }
 
 func (t *TrackRemarkModel) GetId() (err error) {
-	var (
-		count int64
-	)
-
 	// 获取最后一条数据即可
 	db := orm.NewOrm()
 
-	count, err = db.QueryTable(t.TableName()).Count()
-
-	err = db.QueryTable(t.TableName()).Offset(count - 1).Limit(1).One(t)
+	err = db.QueryTable(t.TableName()).OrderBy("-id").One(t)
 
 	return
 }

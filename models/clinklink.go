@@ -34,3 +34,17 @@ func (c *ClinkLink) Insert() {
 		logs.Error("ReqData  Insert  ERROR: ", err.Error())
 	}
 }
+
+func (c *ClinkLink) GetListSub(startTime, endTime, startTime2, endTime2 string) (list []*ClinkLink, err error) {
+	db := orm.NewOrm()
+
+	if _, err = db.Raw("select * from clink_link c " +
+		"where c.trans_time>=? and " +
+		"c.trans_time<=? and c.trans_type='RENEW' and c.status=1 and  " +
+		"c.msisdn in(select msisdn from clink_link d " +
+		"where d.trans_type='SUB' and d.status=1 and d.trans_time>=? and d.trans_time<=?);", startTime, endTime, startTime2, endTime2).QueryRows(&list); err != nil {
+		// err = libs.NewReportError(err)
+	}
+
+	return
+}

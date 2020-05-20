@@ -61,9 +61,14 @@ func (c *CallbackController) Notification() {
 		track := new(models.AffTrack) // 点击表
 		trackId := initial.TrackRemarkStruct.Index
 		initial.TrackRemarkStruct.Index++
+
 		trackRemarkModel := new(models.TrackRemarkModel)
-		trackRemarkModel.TrackId = initial.TrackRemarkStruct.Index
+		// 总回传数变量维护和数据库更替
+		trackRemarkModel.Count = initial.TrackRemarkStruct.Total
+		initial.TrackRemarkStruct.Total++
+		trackRemarkModel.TrackId = trackId
 		trackRemarkModel.Insert()
+
 		track.TrackID = int64(trackId)
 		_ = track.GetOne(tracking.ByTrackID)
 
@@ -90,7 +95,9 @@ func (c *CallbackController) Notification() {
 			moBase.Country = serviceConf.Country
 		}
 		moBase.Msisdn = reqData.Msisdn
+		moBase.SubscriptionID = reqData.ShortCode + "-" + reqData.Keyword + "-" + reqData.Msisdn
 
+		fmt.Println(moBase)
 		// 存入MO数据
 		moT, notificationType = splib.InsertMO(moBase, false, true, "ClinkClick")
 
@@ -111,7 +118,7 @@ START:
 	trackId := initial.TrackRemarkStruct.Index
 	initial.TrackRemarkStruct.Index++
 	trackRemarkModel := new(models.TrackRemarkModel)
-	trackRemarkModel.TrackId = initial.TrackRemarkStruct.Index
+	trackRemarkModel.Count = initial.TrackRemarkStruct.Index
 	trackRemarkModel.Insert()
 
 	track.TrackID = int64(trackId)
@@ -134,7 +141,7 @@ func (c *CallbackController) VisitTrackId() {
 	// 加锁防止脏数据和错误数据
 	initial.TrackRemarkStruct.Mux.Lock()
 
-	c.Data["json"] = data_struct.SuccessReply(fmt.Sprintf("%v", initial.TrackRemarkStruct.Index))
+	c.Data["json"] = data_struct.SuccessReply(fmt.Sprintf("%v", initial.TrackRemarkStruct.Total))
 
 	// 解锁 释放操作权
 	initial.TrackRemarkStruct.Mux.Unlock()
